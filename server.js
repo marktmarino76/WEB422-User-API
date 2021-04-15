@@ -37,8 +37,7 @@ jwtOptions.jwtFromRequest = ExtractJwt.fromAuthHeaderWithScheme("jwt");
 // using the following online tool:
 // https://lastpass.com/generatepassword.php
 
-jwtOptions.secretOrKey =
-  "&0y7$noP#5rt99&GB%Pz7j2b1vkzaB0RKs%^N^0zOP89NT04mPuaM!&G8cbNZOtH";
+jwtOptions.secretOrKey = process.env.JWT_SECRET;
 
 var strategy = new JwtStrategy(jwtOptions, function (jwt_payload, next) {
   console.log("payload received", jwt_payload);
@@ -101,7 +100,11 @@ app.post("/api/user/login", function (req, res) {
       //If userObj is returned generate a payload obj that has two properties:_id and userName.
 
       //create two const variables, privat key and payload object
-      let payload = { _id: user._id, userName: user.userName };
+      let payload = {
+        _id: user._id,
+        userName: user.userName,
+        password: user.password,
+      };
 
       //Create a JWT once private key and payload object have been created
       const token = jwt.sign(payload, process.env.JWT_SECRET);
@@ -122,7 +125,8 @@ app.get(
     userService
       .getFavourites(req.user._id)
       .then((data) => {
-        res.status(200).json({ success: data });
+        console.log(data);
+        res.json(data);
       })
       .catch((err) => {
         res.json({ msg: err });
@@ -140,10 +144,10 @@ app.put(
     userService
       .addFavourite(req.user._id, req.params.id)
       .then((data) => {
-        res.status(200).json({ msg: data });
+        res.json(data);
       })
       .catch((err) => {
-        res.json({ msg: err });
+        res.status(404).json({ msg: err });
       });
   }
 );
@@ -156,7 +160,7 @@ app.delete(
     userService
       .removeFavourite(req.user._id, req.params.id)
       .then((data) => {
-        res.status(200).json({ success: data });
+        res.status(200).json(data);
       })
       .catch((err) => {
         res.json({ msg: err });
